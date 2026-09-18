@@ -1,0 +1,49 @@
+@{
+    ViewData["Title"] = "Contacto y Soporte";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-lcp border-0 shadow-sm p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold mb-2">
+                        <i class="fas fa-headset me-2"></i>Atención al Cliente LCP
+                    </div>
+                    <h2 class="fw-bold text-dark">Contactate con Nosotros</h2>
+                    <p class="text-muted">Estamos para ayudarte con tus consultas comerciales, operativas o logísticas.</p>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 text-center">
+                            <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                            <h6 class="fw-bold mb-1">Correo Electrónico</h6>
+                            <p class="text-muted small mb-0">jjvazquezin@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 text-center">
+                            <i class="fas fa-phone-alt fa-2x text-success mb-2"></i>
+                            <h6 class="fw-bold mb-1">Central Telefónica</h6>
+                            <p class="text-muted small mb-0">0800-333-LCP (527)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info border-0 shadow-sm">
+                    <h6 class="fw-bold mb-1"><i class="fas fa-info-circle me-2"></i>Información Académica del Proyecto:</h6>
+                    <p class="small mb-1"><strong>Materia:</strong> Programación III - Aplicaciones Web</p>
+                    <p class="small mb-1"><strong>Profesor:</strong> Federico Trani (federico.trani@ites.edu.ar)</p>
+                    <p class="small mb-0"><strong>Alumno:</strong> Juan Vázquez</p>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a asp-controller="Consultas" asp-action="Nueva" class="btn btn-primary rounded-pill px-4">
+                        <i class="fas fa-paper-plane me-1"></i> Iniciar Consulta en la Plataforma
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

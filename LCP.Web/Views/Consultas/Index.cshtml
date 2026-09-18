@@ -1,0 +1,134 @@
+@{
+    ViewData["Title"] = "Centro de Mensajería & Consultas";
+    var recibidas = ViewBag.Recibidas as List<LCP.Web.Models.Entities.ConsultaSoporte> ?? new();
+    var enviadas = ViewBag.Enviadas as List<LCP.Web.Models.Entities.ConsultaSoporte> ?? new();
+}
+
+<div class="container-fluid px-lg-5 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h1 class="fw-bold text-dark mb-1"><i class="fas fa-comments text-primary me-2"></i>Consultas & Soporte Asíncrono</h1>
+            <p class="text-muted small mb-0">Canal de comunicación entre compradores, vendedores y equipo de soporte LCP</p>
+        </div>
+        <a asp-action="Nueva" class="btn btn-primary rounded-pill btn-sm px-3 shadow-sm">
+            <i class="fas fa-paper-plane me-1"></i> Nueva Consulta
+        </a>
+    </div>
+
+    <div class="card card-lcp border-0 shadow-sm p-4">
+        <!-- Tabs -->
+        <ul class="nav nav-pills mb-4" id="consultasTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-4" id="recibidas-tab" data-bs-toggle="pill" data-bs-target="#recibidas" type="button" role="tab" aria-controls="recibidas" aria-selected="true">
+                    <i class="fas fa-inbox me-2"></i>Consultas Recibidas
+                    <span class="badge bg-danger rounded-pill ms-1">@recibidas.Count(c => !c.Respondido)</span>
+                </button>
+            </li>
+            <li class="nav-item ms-2" role="presentation">
+                <button class="nav-link rounded-pill px-4" id="enviadas-tab" data-bs-toggle="pill" data-bs-target="#enviadas" type="button" role="tab" aria-controls="enviadas" aria-selected="false">
+                    <i class="fas fa-paper-plane me-2"></i>Mis Consultas Enviadas (@enviadas.Count)
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="consultasTabContent">
+            <!-- Tab Recibidas -->
+            <div class="tab-pane fade show active" id="recibidas" role="tabpanel" aria-labelledby="recibidas-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover table-lcp align-middle datatable-lcp mb-0">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Remitente</th>
+                                <th>Asunto</th>
+                                <th>Publicación</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in recibidas)
+                            {
+                                <tr>
+                                    <td><small class="text-muted">@c.FechaEnvio.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small></td>
+                                    <td><span class="fw-semibold text-dark">@(c.Emisor?.NombreCompleto)</span></td>
+                                    <td><span class="fw-bold text-dark">@c.Asunto</span></td>
+                                    <td>
+                                        @if (c.Producto != null)
+                                        {
+                                            <span class="badge bg-light text-primary border">@c.Producto.Nombre</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border">Soporte General</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @(c.Respondido ? "bg-success" : "bg-warning text-dark") rounded-pill">
+                                            @(c.Respondido ? "Respondida" : "Pendiente")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-action="Detalle" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="fas fa-reply me-1"></i> Ver / Responder
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Enviadas -->
+            <div class="tab-pane fade" id="enviadas" role="tabpanel" aria-labelledby="enviadas-tab">
+                <div class="table-responsive">
+                    <table class="table table-hover table-lcp align-middle datatable-lcp mb-0">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Destinatario</th>
+                                <th>Asunto</th>
+                                <th>Publicación</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in enviadas)
+                            {
+                                <tr>
+                                    <td><small class="text-muted">@c.FechaEnvio.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small></td>
+                                    <td>
+                                        <span class="fw-semibold text-dark">@(c.Receptor != null ? (c.Receptor.NombreComercio ?? c.Receptor.NombreCompleto) : "Soporte Central LCP")</span>
+                                    </td>
+                                    <td><span class="fw-bold text-dark">@c.Asunto</span></td>
+                                    <td>
+                                        @if (c.Producto != null)
+                                        {
+                                            <span class="badge bg-light text-primary border">@c.Producto.Nombre</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-muted border">Soporte General</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @(c.Respondido ? "bg-success" : "bg-warning text-dark") rounded-pill">
+                                            @(c.Respondido ? "Respondida" : "Esperando respuesta")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-action="Detalle" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                            <i class="fas fa-eye me-1"></i> Ver Hilo
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

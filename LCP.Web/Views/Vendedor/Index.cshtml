@@ -1,0 +1,165 @@
+@using LCP.Web.Models.Entities
+@using LCP.Web.Models.Enums
+@{
+    ViewData["Title"] = "Panel de Vendedor & Comercio";
+    var stats = ViewBag.Estadisticas as EstadisticaVentaDto ?? new();
+    var pedidosRecientes = ViewBag.PedidosRecientes as List<Pedido> ?? new();
+    var masVistos = ViewBag.ProductosMasVistos as List<Producto> ?? new();
+}
+
+<div class="container-fluid px-lg-5 py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h1 class="fw-bold text-dark mb-1"><i class="fas fa-chart-pie text-primary me-2"></i>Panel de Control del Vendedor</h1>
+            <p class="text-muted small mb-0">Métricas en tiempo real procesadas con Stored Procedures de SQL Server</p>
+        </div>
+        <div class="d-flex gap-2 mt-2 mt-md-0">
+            <a asp-controller="Productos" asp-action="Create" class="btn btn-success rounded-pill px-3 shadow-sm">
+                <i class="fas fa-plus-circle me-1"></i> Publicar Producto
+            </a>
+            <a asp-controller="Reportes" asp-action="Estadisticas" class="btn btn-outline-primary rounded-pill px-3">
+                <i class="fas fa-chart-line me-1"></i> Ver Reportes Detallados
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs Rápidos -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-lcp border-0 shadow-sm p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted text-uppercase fw-bold">Total Facturado</small>
+                        <h3 class="fw-bold text-primary mb-0 mt-1">$@stats.TotalVentas.ToString("N2")</h3>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle">
+                        <i class="fas fa-dollar-sign fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-lcp border-0 shadow-sm p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted text-uppercase fw-bold">Total Pedidos</small>
+                        <h3 class="fw-bold text-dark mb-0 mt-1">@stats.TotalPedidos</h3>
+                    </div>
+                    <div class="bg-info bg-opacity-10 text-info p-3 rounded-circle">
+                        <i class="fas fa-shopping-bag fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-lcp border-0 shadow-sm p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted text-uppercase fw-bold">En Preparación / Camino</small>
+                        <h3 class="fw-bold text-warning mb-0 mt-1">@(stats.PedidosEnPreparacion + stats.PedidosEnCamino)</h3>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle">
+                        <i class="fas fa-truck-loading fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card card-lcp border-0 shadow-sm p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted text-uppercase fw-bold">Entregados con Éxito</small>
+                        <h3 class="fw-bold text-success mb-0 mt-1">@stats.PedidosEntregados</h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle">
+                        <i class="fas fa-check-double fa-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Pedidos Recientes -->
+        <div class="col-lg-8">
+            <div class="card card-lcp border-0 shadow-sm p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fas fa-shipping-fast text-primary me-2"></i>Últimos Pedidos Asignados</h5>
+                    <a asp-action="Pedidos" class="btn btn-sm btn-outline-primary rounded-pill">Ver Todos</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tracking</th>
+                                <th>Comprador</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Total</th>
+                                <th class="text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in pedidosRecientes)
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-controller="Pedidos" asp-action="Detalle" asp-route-id="@p.Id" class="fw-bold text-primary text-decoration-none font-monospace">
+                                            @p.CodigoSeguimiento
+                                        </a>
+                                    </td>
+                                    <td>@(p.Comprador?.NombreCompleto ?? "Cliente")</td>
+                                    <td>@p.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="badge @(p.Estado == EstadoPedido.Entregado ? "bg-success" : (p.Estado == EstadoPedido.Cancelado ? "bg-danger" : "bg-primary")) rounded-pill">
+                                            @p.Estado
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold">$@p.Total.ToString("N2")</td>
+                                    <td class="text-center">
+                                        <a asp-action="CambiarEstado" asp-route-id="@p.Id" class="btn btn-sm btn-outline-warning rounded-pill" title="Actualizar Estado">
+                                            <i class="fas fa-edit me-1"></i> Estado
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos Más Vistos / Populares -->
+        <div class="col-lg-4">
+            <div class="card card-lcp border-0 shadow-sm p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="fas fa-fire text-danger me-2"></i>Publicaciones Destacadas</h5>
+                </div>
+
+                <ul class="list-group list-group-flush">
+                    @foreach (var prod in masVistos)
+                    {
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent">
+                            <div class="d-flex align-items-center">
+                                <img src="@(prod.ImagenUrl ?? "/images/no-image.png")" alt="@prod.Nombre" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;" />
+                                <div>
+                                    <div class="fw-semibold text-dark small text-truncate" style="max-width: 170px;">@prod.Nombre</div>
+                                    <small class="text-muted"><i class="far fa-eye me-1"></i>@prod.NumeroVisitas visitas</small>
+                                </div>
+                            </div>
+                            <span class="fw-bold text-primary small">$@prod.Precio.ToString("N0")</span>
+                        </li>
+                    }
+                </ul>
+
+                <div class="mt-auto pt-3 border-top text-center">
+                    <a asp-controller="Productos" asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill w-100">
+                        Administrar Mis Productos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,191 @@
+@model LCP.Web.Models.Entities.Producto
+@{
+    ViewData["Title"] = Model.Nombre;
+    var relacionados = ViewBag.Relacionados as List<LCP.Web.Models.Entities.Producto> ?? new();
+}
+
+<div class="container px-lg-5 py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Inicio</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Catalogo" asp-action="Index" class="text-decoration-none">Catálogo</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Catalogo" asp-action="Index" asp-route-categoriaId="@Model.CategoriaId" class="text-decoration-none">@(Model.Categoria?.Nombre)</a></li>
+            <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 300px;">@Model.Nombre</li>
+        </ol>
+    </nav>
+
+    <div class="card card-lcp border-0 shadow-sm p-4 p-md-5 mb-5">
+        <div class="row g-5">
+            <!-- Imagen del Producto -->
+            <div class="col-lg-6">
+                <div class="position-relative rounded-4 overflow-hidden border shadow-sm bg-light" style="max-height: 480px;">
+                    <img src="@(Model.ImagenUrl ?? "/images/no-image.png")" alt="@Model.Nombre" class="img-fluid w-100 object-fit-cover" style="min-height: 380px; max-height: 480px;" />
+                    @if (Model.Destacado)
+                    {
+                        <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill shadow-sm fw-bold">
+                            <i class="fas fa-star me-1"></i> Publicación Destacada
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <!-- Información y Compra -->
+            <div class="col-lg-6 d-flex flex-column">
+                <div class="mb-2">
+                    <span class="badge bg-primary rounded-pill px-3 py-1 me-2">@(Model.Categoria?.Nombre ?? "General")</span>
+                    <span class="text-muted small"><i class="far fa-eye me-1"></i>@Model.NumeroVisitas visitas</span>
+                    @if (!string.IsNullOrEmpty(Model.CodigoSku))
+                    {
+                        <span class="text-muted small ms-2"><i class="fas fa-barcode me-1"></i>SKU: @Model.CodigoSku</span>
+                    }
+                </div>
+
+                <h2 class="fw-bold text-dark mb-3">@Model.Nombre</h2>
+
+                <div class="d-flex align-items-baseline gap-2 mb-3">
+                    <span class="display-5 fw-extrabold text-primary">$@Model.Precio.ToString("N2")</span>
+                    <span class="text-muted small">IVA Incluido</span>
+                </div>
+
+                <div class="mb-4">
+                    @if (Model.Stock > 0)
+                    {
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill fw-semibold">
+                            <i class="fas fa-check-circle me-1"></i> Stock disponible: @Model.Stock unidades
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger px-3 py-2 rounded-pill fw-semibold">
+                            <i class="fas fa-times-circle me-1"></i> Sin Stock Disponible
+                        </span>
+                    }
+                    <span class="badge bg-light text-muted border px-3 py-2 rounded-pill ms-2">
+                        <i class="fas fa-weight-hanging me-1"></i> Peso estimado: @Model.PesoKg kg
+                    </span>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <h6 class="fw-bold text-dark mb-2">Descripción del Producto</h6>
+                    <p class="text-secondary mb-0" style="white-space: pre-line;">@Model.Descripcion</p>
+                </div>
+
+                <!-- Acciones según Rol de Usuario -->
+                @if (User.IsInRole("Administrador"))
+                {
+                    <div class="p-3 bg-light rounded-3 mb-4 border d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-warning text-dark me-2">Modo Administrador</span>
+                            <small class="text-muted">Control global de catálogo</small>
+                        </div>
+                        <a asp-controller="Productos" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning rounded-pill fw-semibold btn-sm px-3">
+                            <i class="fas fa-edit me-1"></i> Editar Publicación
+                        </a>
+                    </div>
+                }
+                else if (User.IsInRole("Vendedor"))
+                {
+                    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (Model.VendedorId == currentUserId)
+                    {
+                        <div class="p-3 bg-light rounded-3 mb-4 border d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-info text-dark me-2">Tu Producto</span>
+                                <small class="text-muted">Esta publicación pertenece a tu comercio</small>
+                            </div>
+                            <a asp-controller="Productos" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary rounded-pill fw-semibold btn-sm px-3">
+                                <i class="fas fa-edit me-1"></i> Modificar Stock / Precio
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-secondary py-2 px-3 small rounded-3 mb-4">
+                            <i class="fas fa-store me-1 text-primary"></i> <strong>Modo Comercio:</strong> Vista de catálogo. Para compras utiliza una cuenta de Comprador.
+                        </div>
+                    }
+                }
+                else
+                {
+                    <!-- Selector de cantidad y botón de compra para Comprador o Visitante -->
+                    @if (Model.Stock > 0)
+                    {
+                        <div class="d-flex gap-3 align-items-center mb-4">
+                            <div style="width: 110px;">
+                                <label class="form-label fw-semibold small text-muted mb-1">Cantidad:</label>
+                                <input type="number" id="cantidad-input" class="form-control text-center fw-bold" value="1" min="1" max="@Model.Stock" />
+                            </div>
+                            <div class="flex-grow-1 align-self-end">
+                                <button type="button" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm fw-bold" onclick="agregarAlCarritoConCantidad(@Model.Id)">
+                                    <i class="fas fa-cart-plus me-2"></i> Agregar al Carrito
+                                </button>
+                            </div>
+                        </div>
+                    }
+                }
+
+                <!-- Tarjeta del Vendedor y Consulta Directa -->
+                <div class="card p-3 border-0 bg-light rounded-3 mt-auto">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-primary text-white p-3 rounded-circle">
+                                <i class="fas fa-store fa-lg"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted text-uppercase d-block fw-bold" style="font-size: 0.7rem;">Publicado por</small>
+                                <h6 class="fw-bold text-dark mb-0">@(Model.Vendedor?.NombreComercio ?? Model.Vendedor?.NombreCompleto)</h6>
+                                <small class="text-muted"><i class="fas fa-map-marker-alt text-danger me-1"></i>@(Model.Vendedor?.Ciudad ?? "Santa Rosa"), @(Model.Vendedor?.Provincia ?? "La Pampa")</small>
+                            </div>
+                        </div>
+                        <a asp-controller="Consultas" asp-action="Nueva" asp-route-productoId="@Model.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                            <i class="fas fa-comment-dots me-1"></i> Consultar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Publicaciones Relacionadas -->
+    @if (relacionados.Any())
+    {
+        <div class="mb-5">
+            <h4 class="fw-bold text-dark mb-4"><i class="fas fa-layer-group text-primary me-2"></i>Productos Relacionados</h4>
+            <div class="row g-4">
+                @foreach (var rel in relacionados)
+                {
+                    <div class="col-6 col-md-3">
+                        <div class="product-card">
+                            <div class="product-img-wrapper" style="height: 160px;">
+                                <img src="@(rel.ImagenUrl ?? "/images/no-image.png")" alt="@rel.Nombre" />
+                            </div>
+                            <div class="p-3 d-flex flex-column flex-grow-1">
+                                <h6 class="fw-bold text-dark text-truncate mb-2">
+                                    <a asp-controller="Catalogo" asp-action="Detalle" asp-route-id="@rel.Id" class="text-dark text-decoration-none hover-link">
+                                        @rel.Nombre
+                                    </a>
+                                </h6>
+                                <div class="mt-auto d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold text-primary">$@rel.Precio.ToString("N2")</span>
+                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="agregarAlCarrito(@rel.Id, 1)">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function agregarAlCarritoConCantidad(productoId) {
+            const cantidad = parseInt($('#cantidad-input').val()) || 1;
+            agregarAlCarrito(productoId, cantidad);
+        }
+    </script>
+}

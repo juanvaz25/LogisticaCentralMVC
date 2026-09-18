@@ -1,0 +1,115 @@
+@model List<LCP.Web.Models.Entities.Producto>
+@{
+    ViewData["Title"] = "Gestión de Productos";
+}
+
+<div class="container-fluid px-lg-5 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h1 class="fw-bold text-dark mb-1"><i class="fas fa-boxes text-primary me-2"></i>Gestión de Productos y Publicaciones</h1>
+            <p class="text-muted small mb-0">Administración de stock, precios y catálogo de venta</p>
+        </div>
+        <a asp-action="Create" class="btn btn-success rounded-pill btn-sm px-3 shadow-sm">
+            <i class="fas fa-plus-circle me-1"></i> Publicar Nuevo Producto
+        </a>
+    </div>
+
+    <div class="card card-lcp border-0 shadow-sm p-4">
+        <div class="table-responsive">
+            <table class="table table-hover table-lcp align-middle datatable-lcp mb-0">
+                <thead>
+                    <tr>
+                        <th>Foto</th>
+                        <th>Título</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Vendedor</th>
+                        <th>Visitas</th>
+                        <th>Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@(p.ImagenUrl ?? "/images/no-image.png")" alt="@p.Nombre" class="rounded" style="width: 45px; height: 45px; object-fit: cover;" />
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark text-truncate" style="max-width: 200px;">@p.Nombre</div>
+                                <small class="text-muted">SKU: @(p.CodigoSku ?? "N/A")</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">@(p.Categoria?.Nombre)</span>
+                            </td>
+                            <td class="fw-bold text-primary">$@p.Precio.ToString("N2")</td>
+                            <td>
+                                <span class="badge @(p.Stock > 5 ? "bg-success" : (p.Stock > 0 ? "bg-warning text-dark" : "bg-danger"))">
+                                    @p.Stock u.
+                                </span>
+                            </td>
+                            <td>
+                                <small class="text-dark fw-semibold">@(p.Vendedor?.NombreComercio ?? p.Vendedor?.NombreCompleto)</small>
+                            </td>
+                            <td><i class="far fa-eye me-1 text-muted"></i>@p.NumeroVisitas</td>
+                            <td>
+                                <span class="badge @(p.Activo ? "bg-success" : "bg-secondary")">
+                                    @(p.Activo ? "Activo" : "Inactivo")
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary rounded-pill px-2 me-1" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-controller="Catalogo" asp-action="Detalle" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary rounded-pill px-2 me-1" title="Ver en Catálogo">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2" onclick="eliminarProducto(@p.Id, '@p.Nombre')" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function eliminarProducto(id, nombre) {
+            Swal.fire({
+                title: '¿Dar de baja publicación?',
+                text: `¿Seguro que deseas eliminar o desactivar "${nombre}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, dar de baja',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Productos/Delete/' + id,
+                        type: 'POST',
+                        data: {
+                            "__RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire('¡Listo!', res.message, 'success').then(() => location.reload());
+                            } else {
+                                Swal.fire('Error', res.message, 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,140 @@
+@model LCP.Web.Models.ViewModels.Account.RegisterViewModel
+@{
+    ViewData["Title"] = "Crear Cuenta";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-lcp border-0 shadow-sm p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <img src="~/images/Logo-removebg-preview.png" alt="LCP Logo" height="55" class="mb-2" />
+                    <h3 class="fw-bold text-dark mb-1">Crear Cuenta en LCP</h3>
+                    <p class="text-muted small">Registrate como comprador o sumate como comercio vendedor a la red</p>
+                </div>
+
+                <form asp-controller="Account" asp-action="Register" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <!-- Selección de Tipo de Cuenta -->
+                    <div class="mb-4 text-center">
+                        <label class="form-label fw-bold small text-muted text-uppercase d-block mb-2">Seleccioná tu tipo de cuenta</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="TipoUsuario" id="tipoComprador" value="Comprador" checked autocomplete="off" onchange="toggleCamposVendedor()">
+                            <label class="btn btn-outline-primary py-2" for="tipoComprador">
+                                <i class="fas fa-shopping-bag me-1"></i> Soy Comprador
+                            </label>
+
+                            <input type="radio" class="btn-check" name="TipoUsuario" id="tipoVendedor" value="Vendedor" autocomplete="off" onchange="toggleCamposVendedor()">
+                            <label class="btn btn-outline-primary py-2" for="tipoVendedor">
+                                <i class="fas fa-store me-1"></i> Soy Comercio / Vendedor
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Datos Personales -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Nombre" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="Nombre" class="form-control" placeholder="Tu nombre" />
+                            <span asp-validation-for="Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Apellido" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="Apellido" class="form-control" placeholder="Tu apellido" />
+                            <span asp-validation-for="Apellido" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="Email" class="form-control" placeholder="nombre@correo.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="2954-123456" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label asp-for="Dni" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="Dni" class="form-control" placeholder="DNI / Cédula" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Ciudad" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="Ciudad" class="form-control" placeholder="Santa Rosa, Pico, etc." />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Provincia" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="Provincia" class="form-control" placeholder="La Pampa, Córdoba, etc." />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Direccion" class="form-label fw-semibold small text-dark"></label>
+                        <input asp-for="Direccion" class="form-control" placeholder="Calle, número, piso/depto" />
+                    </div>
+
+                    <!-- Campos exclusivos de Vendedor -->
+                    <div id="seccion-vendedor" class="p-3 bg-light rounded-3 mb-3 border d-none">
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-briefcase me-2"></i>Datos del Comercio / Producción</h6>
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <label asp-for="NombreComercio" class="form-label fw-semibold small text-dark"></label>
+                                <input asp-for="NombreComercio" class="form-control" placeholder="Nombre comercial de fantasía" />
+                            </div>
+                            <div class="col-md-5">
+                                <label asp-for="Cuit" class="form-label fw-semibold small text-dark"></label>
+                                <input asp-for="Cuit" class="form-control" placeholder="30-12345678-9" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contraseñas -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="Password" class="form-control" placeholder="Mínimo 6 caracteres" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Repetí tu contraseña" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-pill shadow-sm mb-3">
+                        <i class="fas fa-check-circle me-1"></i> Registrar Cuenta
+                    </button>
+
+                    <div class="text-center small">
+                        <span class="text-muted">¿Ya tenés cuenta?</span>
+                        <a asp-controller="Account" asp-action="Login" class="text-primary fw-bold text-decoration-none ms-1">Iniciá sesión acá</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleCamposVendedor() {
+            if ($('#tipoVendedor').is(':checked')) {
+                $('#seccion-vendedor').removeClass('d-none');
+            } else {
+                $('#seccion-vendedor').addClass('d-none');
+            }
+        }
+        $(document).ready(function() {
+            toggleCamposVendedor();
+        });
+    </script>
+}

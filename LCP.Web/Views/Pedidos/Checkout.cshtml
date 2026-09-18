@@ -1,0 +1,187 @@
+@model LCP.Web.Models.ViewModels.Pedidos.CheckoutViewModel
+@{
+    ViewData["Title"] = "Finalizar Pedido y Envío";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-dark"><i class="fas fa-truck-loading text-primary me-2"></i>Checkout & Datos de Entrega</h2>
+        <p class="text-muted">Completá los datos del destino para coordinar la logística con la red de nodos LCP.</p>
+    </div>
+
+    <form asp-controller="Pedidos" asp-action="Checkout" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+        <div class="row g-4">
+            <!-- Formulario de Entrega y Pago -->
+            <div class="col-lg-8">
+                <!-- 1. Nodo Logístico y Dropdowns Anidados -->
+                <div class="card card-lcp border-0 shadow-sm p-4 mb-4">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <span class="badge bg-primary rounded-circle me-2">1</span>Selección de Nodo de Distribución
+                    </h5>
+                    <p class="text-muted small mb-3">Elegí la provincia de destino para cargar los nodos y centros logísticos habilitados.</p>
+
+                    <div class="row g-3">
+                        <!-- Dropdown 1: Provincias -->
+                        <div class="col-md-6">
+                            <label asp-for="ProvinciaId" class="form-label fw-semibold small text-dark"></label>
+                            <select asp-for="ProvinciaId" asp-items="Model.ProvinciasList" class="form-select" id="select-provincia" required>
+                                <option value="">-- Seleccione una Provincia --</option>
+                            </select>
+                            <span asp-validation-for="ProvinciaId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Dropdown 2: Nodos de Distribución (Anidado vía AJAX) -->
+                        <div class="col-md-6">
+                            <label asp-for="NodoDistribucionId" class="form-label fw-semibold small text-dark"></label>
+                            <select asp-for="NodoDistribucionId" asp-items="Model.NodosList" class="form-select" id="select-nodo" required>
+                                <option value="">-- Seleccione un Centro / Nodo --</option>
+                            </select>
+                            <span asp-validation-for="NodoDistribucionId" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Dirección de Entrega -->
+                <div class="card card-lcp border-0 shadow-sm p-4 mb-4">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <span class="badge bg-primary rounded-circle me-2">2</span>Domicilio del Destinatario
+                    </h5>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-8">
+                            <label asp-for="DireccionEntrega" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="DireccionEntrega" class="form-control" placeholder="Calle, número, piso/departamento" />
+                            <span asp-validation-for="DireccionEntrega" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="CiudadEntrega" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="CiudadEntrega" class="form-control" placeholder="Ciudad / Localidad" />
+                            <span asp-validation-for="CiudadEntrega" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="TelefonoContacto" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="TelefonoContacto" class="form-control" placeholder="Teléfono para recibir avisos de entrega" />
+                            <span asp-validation-for="TelefonoContacto" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="CodigoPostal" class="form-label fw-semibold small text-dark"></label>
+                            <input asp-for="CodigoPostal" class="form-control" placeholder="Código Postal (opcional)" />
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label asp-for="NotasAdicionales" class="form-label fw-semibold small text-dark"></label>
+                        <textarea asp-for="NotasAdicionales" class="form-control" rows="2" placeholder="Indicaciones para el transportista o repartidor..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 3. Método de Pago -->
+                <div class="card card-lcp border-0 shadow-sm p-4">
+                    <h5 class="fw-bold text-primary mb-3">
+                        <span class="badge bg-primary rounded-circle me-2">3</span>Método de Pago
+                    </h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-check p-3 bg-light rounded-3 border">
+                                <input class="form-check-input" type="radio" asp-for="MetodoPago" value="Transferencia" id="pagoTransferencia" checked>
+                                <label class="form-check-label fw-semibold text-dark" for="pagoTransferencia">
+                                    <i class="fas fa-university text-primary me-2"></i> Transferencia Bancaria
+                                </label>
+                                <div class="small text-muted ms-4">CBU / Alias oficial LCP</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check p-3 bg-light rounded-3 border">
+                                <input class="form-check-input" type="radio" asp-for="MetodoPago" value="Tarjeta" id="pagoTarjeta">
+                                <label class="form-check-label fw-semibold text-dark" for="pagoTarjeta">
+                                    <i class="fas fa-credit-card text-success me-2"></i> Débito / Crédito
+                                </label>
+                                <div class="small text-muted ms-4">Pago online seguro</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check p-3 bg-light rounded-3 border">
+                                <input class="form-check-input" type="radio" asp-for="MetodoPago" value="EfectivoContraEntrega" id="pagoEfectivo">
+                                <label class="form-check-label fw-semibold text-dark" for="pagoEfectivo">
+                                    <i class="fas fa-money-bill-wave text-warning me-2"></i> Efectivo contra entrega
+                                </label>
+                                <div class="small text-muted ms-4">Aboná al recibir el paquete</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check p-3 bg-light rounded-3 border">
+                                <input class="form-check-input" type="radio" asp-for="MetodoPago" value="BilleteraVirtual" id="pagoBilletera">
+                                <label class="form-check-label fw-semibold text-dark" for="pagoBilletera">
+                                    <i class="fas fa-mobile-alt text-info me-2"></i> Billeteras Virtuales
+                                </label>
+                                <div class="small text-muted ms-4">Mercado Pago, Modo, etc.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen y Confirmación -->
+            <div class="col-lg-4">
+                <div class="card card-lcp border-0 shadow-sm p-4 sticky-top" style="top: 90px;">
+                    <h5 class="fw-bold text-dark mb-3"><i class="fas fa-box-open text-primary me-2"></i>Detalle de Compra</h5>
+
+                    <ul class="list-group list-group-flush mb-3">
+                        @foreach (var item in Model.Items)
+                        {
+                            <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent">
+                                <div>
+                                    <div class="fw-semibold text-dark small text-truncate" style="max-width: 190px;">@item.Nombre</div>
+                                    <small class="text-muted">@item.Cantidad x $@item.Precio.ToString("N0")</small>
+                                </div>
+                                <span class="fw-bold text-dark small">$@item.Subtotal.ToString("N2")</span>
+                            </li>
+                        }
+                    </ul>
+
+                    <div class="d-flex justify-content-between mb-2 small text-muted">
+                        <span>Subtotal productos:</span>
+                        <span class="fw-semibold text-dark">$@Model.Subtotal.ToString("N2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3 small text-muted">
+                        <span>Tarifa logística LCP:</span>
+                        <span class="fw-bold text-success" id="tarifa-envio-display">$@Model.CostoEnvio.ToString("N2")</span>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between align-items-baseline mb-4 flex-wrap gap-1">
+                        <span class="fw-bold text-dark fs-5">Total a Pagar:</span>
+                        <span class="checkout-total-value ms-auto" id="total-checkout-display">$@Model.Total.ToString("N2")</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow py-3">
+                        <i class="fas fa-lock me-2"></i> Confirmar y Realizar Pedido
+                    </button>
+
+                    <p class="text-muted text-center small mt-3 mb-0">
+                        <i class="fas fa-qrcode me-1 text-primary"></i> Se generará un código de seguimiento y QR de confirmación.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Inicializar dropdown anidado de Provincias -> Nodos LCP
+            configurarDropdownNodos('select-provincia', 'select-nodo', 'tarifa-envio-display', 'total-checkout-display', @Model.Subtotal);
+        });
+    </script>
+}

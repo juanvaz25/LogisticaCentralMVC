@@ -1,0 +1,143 @@
+@model LCP.Web.Models.ViewModels.Reportes.ReporteVentasViewModel
+@{
+    ViewData["Title"] = "Reportes y Estadísticas (Stored Procedures)";
+    var stats = Model.Estadisticas;
+}
+
+<div class="container-fluid px-lg-5 py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <div class="badge bg-dark text-info px-3 py-1 rounded-pill mb-1">
+                <i class="fas fa-database me-1"></i> Stored Procedures: sp_ObtenerEstadisticasVendedor & sp_ListarPedidosPorEstado
+            </div>
+            <h1 class="fw-bold text-dark mb-0">@Model.TituloReporte</h1>
+        </div>
+        <div class="d-flex gap-2 mt-2 mt-md-0">
+            <button onclick="window.print()" class="btn btn-outline-secondary rounded-pill btn-sm px-3">
+                <i class="fas fa-print me-1"></i> Imprimir Reporte
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Cards desde Stored Procedure -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card card-lcp border-0 shadow-sm p-3">
+                <small class="text-muted text-uppercase fw-bold">Facturación Total (SP)</small>
+                <h3 class="fw-bold text-primary mb-1 mt-1">$@stats.TotalVentas.ToString("N2")</h3>
+                <small class="text-success"><i class="fas fa-check-circle me-1"></i>Ventas netas aprobadas</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-lcp border-0 shadow-sm p-3">
+                <small class="text-muted text-uppercase fw-bold">Total Envíos (SP)</small>
+                <h3 class="fw-bold text-dark mb-1 mt-1">@stats.TotalPedidos</h3>
+                <small class="text-muted">Pedidos procesados en la red</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-lcp border-0 shadow-sm p-3">
+                <small class="text-muted text-uppercase fw-bold">Rubro Líder en Ventas (SP)</small>
+                <h4 class="fw-bold text-success mb-1 mt-1 text-truncate">@stats.CategoriaMasVendida</h4>
+                <small class="text-muted">Mayor volumen despachado</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-lcp border-0 shadow-sm p-3">
+                <small class="text-muted text-uppercase fw-bold">Publicaciones Activas (SP)</small>
+                <h3 class="fw-bold text-info mb-1 mt-1">@stats.TotalProductos</h3>
+                <small class="text-muted">Artículos en catálogo</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desglose por Estados según SP -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg">
+            <div class="p-3 bg-white rounded-3 border text-center shadow-sm">
+                <small class="text-muted d-block fw-bold text-uppercase">En Proceso</small>
+                <span class="fs-4 fw-bold text-primary">@stats.PedidosEnProceso</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg">
+            <div class="p-3 bg-white rounded-3 border text-center shadow-sm">
+                <small class="text-muted d-block fw-bold text-uppercase">En Preparación</small>
+                <span class="fs-4 fw-bold text-warning">@stats.PedidosEnPreparacion</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg">
+            <div class="p-3 bg-white rounded-3 border text-center shadow-sm">
+                <small class="text-muted d-block fw-bold text-uppercase">En Camino</small>
+                <span class="fs-4 fw-bold text-info">@stats.PedidosEnCamino</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg">
+            <div class="p-3 bg-white rounded-3 border text-center shadow-sm">
+                <small class="text-muted d-block fw-bold text-uppercase">Entregados</small>
+                <span class="fs-4 fw-bold text-success">@stats.PedidosEntregados</span>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg">
+            <div class="p-3 bg-white rounded-3 border text-center shadow-sm">
+                <small class="text-muted d-block fw-bold text-uppercase">Cancelados</small>
+                <span class="fs-4 fw-bold text-danger">@stats.PedidosCancelados</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla Detallada obtenida vía Stored Procedure sp_ListarPedidosPorEstado -->
+    <div class="card card-lcp border-0 shadow-sm p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark mb-0">
+                <i class="fas fa-list-alt text-primary me-2"></i>Listado de Pedidos Recuperados con Stored Procedure
+            </h5>
+            <!-- Filtro de Estado -->
+            <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+                <span class="small text-muted">Filtrar estado:</span>
+                <div class="btn-group btn-group-sm">
+                    <a asp-action="Estadisticas" class="btn @(Model.EstadoFiltroId == null ? "btn-primary" : "btn-outline-secondary")">Todos</a>
+                    <a asp-action="Estadisticas" asp-route-estadoId="1" class="btn @(Model.EstadoFiltroId == 1 ? "btn-primary" : "btn-outline-secondary")">En Proceso</a>
+                    <a asp-action="Estadisticas" asp-route-estadoId="2" class="btn @(Model.EstadoFiltroId == 2 ? "btn-primary" : "btn-outline-secondary")">Preparación</a>
+                    <a asp-action="Estadisticas" asp-route-estadoId="3" class="btn @(Model.EstadoFiltroId == 3 ? "btn-primary" : "btn-outline-secondary")">En Camino</a>
+                    <a asp-action="Estadisticas" asp-route-estadoId="4" class="btn @(Model.EstadoFiltroId == 4 ? "btn-primary" : "btn-outline-secondary")">Entregados</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-lcp align-middle datatable-lcp mb-0">
+                <thead>
+                    <tr>
+                        <th>Tracking (SP)</th>
+                        <th>Fecha</th>
+                        <th>Comprador</th>
+                        <th>Vendedor</th>
+                        <th>Destino</th>
+                        <th class="text-center">Artículos</th>
+                        <th>Estado</th>
+                        <th class="text-end">Total Facturado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.PedidosRecientesSp)
+                    {
+                        <tr>
+                            <td class="fw-bold text-primary font-monospace">@row.CodigoSeguimiento</td>
+                            <td>@row.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@row.NombreComprador</td>
+                            <td><span class="fw-semibold text-dark">@row.NombreVendedor</span></td>
+                            <td><small class="text-muted">@row.CiudadEntrega, @row.ProvinciaEntrega</small></td>
+                            <td class="text-center"><span class="badge bg-light text-dark border">@row.CantidadItems u.</span></td>
+                            <td>
+                                <span class="badge @(row.EstadoId == 4 ? "bg-success" : (row.EstadoId == 5 ? "bg-danger" : (row.EstadoId == 3 ? "bg-info text-dark" : "bg-warning text-dark"))) rounded-pill">
+                                    @row.EstadoNombre
+                                </span>
+                            </td>
+                            <td class="text-end fw-bold text-dark">$@row.Total.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

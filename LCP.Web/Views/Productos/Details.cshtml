@@ -1,0 +1,59 @@
+@model LCP.Web.Models.Entities.Producto
+@{
+    ViewData["Title"] = $"Detalle - {Model.Nombre}";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-lcp border-0 shadow-sm p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <div>
+                        <h3 class="fw-bold text-dark mb-1">Detalle del Producto</h3>
+                        <p class="text-muted small mb-0">Información técnica y administrativa de la publicación</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary rounded-pill btn-sm px-3">
+                            <i class="fas fa-edit me-1"></i> Editar
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill btn-sm">
+                            Volver
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4 text-center">
+                        <img src="@(Model.ImagenUrl ?? "/images/no-image.png")" alt="@Model.Nombre" class="rounded-4 img-fluid shadow-sm" style="max-height: 220px; object-fit: cover;" />
+                    </div>
+                    <div class="col-md-8">
+                        <h4 class="fw-bold text-dark mb-2">@Model.Nombre</h4>
+                        <div class="mb-3">
+                            <span class="badge bg-primary me-1">@(Model.Categoria?.Nombre)</span>
+                            <span class="badge bg-light text-dark border">SKU: @(Model.CodigoSku ?? "N/A")</span>
+                            <span class="badge @(Model.Activo ? "bg-success" : "bg-danger") ms-1">@(Model.Activo ? "Activo" : "Inactivo")</span>
+                        </div>
+                        <div class="display-6 fw-bold text-primary mb-3">$@Model.Precio.ToString("N2")</div>
+                        <div class="row g-2 small text-muted">
+                            <div class="col-6"><strong>Stock disponible:</strong> @Model.Stock unidades</div>
+                            <div class="col-6"><strong>Peso:</strong> @Model.PesoKg kg</div>
+                            <div class="col-6"><strong>Visitas registradas:</strong> @Model.NumeroVisitas</div>
+                            <div class="col-6"><strong>Publicado el:</strong> @Model.FechaCreacion.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <h6 class="fw-bold text-dark mb-2">Descripción</h6>
+                    <p class="text-secondary mb-0">@Model.Descripcion</p>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 border">
+                    <h6 class="fw-bold text-dark mb-2">Comercio Vendedor</h6>
+                    <p class="text-dark fw-semibold mb-1">@(Model.Vendedor?.NombreComercio ?? Model.Vendedor?.NombreCompleto)</p>
+                    <p class="text-muted small mb-0"><i class="fas fa-envelope me-1"></i>@Model.Vendedor?.Email | <i class="fas fa-phone-alt me-1"></i>@Model.Vendedor?.PhoneNumber</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,79 @@
+@model LCP.Web.Models.ViewModels.Consultas.ConsultaCreateViewModel
+@{
+    ViewData["Title"] = "Nueva Consulta";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card card-lcp border-0 shadow-sm p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <div>
+                        <h3 class="fw-bold text-dark mb-1"><i class="fas fa-paper-plane text-primary me-2"></i>Enviar Consulta</h3>
+                        <p class="text-muted small mb-0">Comunicación asíncrona y soporte directo</p>
+                    </div>
+                    <a asp-action="Index" class="btn btn-outline-secondary rounded-pill btn-sm">Volver</a>
+                </div>
+
+                <form asp-action="Nueva" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="ProductoId" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    @if (!string.IsNullOrEmpty(Model.TituloProducto))
+                    {
+                        <div class="p-3 bg-light rounded-3 mb-3 border d-flex align-items-center">
+                            <i class="fas fa-box text-primary fa-2x me-3"></i>
+                            <div>
+                                <small class="text-muted text-uppercase fw-bold d-block">Publicación Consultada:</small>
+                                <strong class="text-dark">@Model.TituloProducto</strong>
+                                @if (!string.IsNullOrEmpty(Model.NombreDestinatario))
+                                {
+                                    <div class="small text-muted">Vendedor asignado: @Model.NombreDestinatario</div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label asp-for="ReceptorId" class="form-label fw-semibold small text-dark">
+                            <i class="fas fa-user-check text-primary me-1"></i>¿A quién deseas dirigir tu consulta?
+                        </label>
+                        <select asp-for="ReceptorId" asp-items="Model.DestinatariosList" class="form-select shadow-sm" required>
+                        </select>
+                        <span asp-validation-for="ReceptorId" class="text-danger small"></span>
+                        <div class="form-text small">Puedes consultar a la administración de LCP o directamente al comercio/vendedor.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Asunto" class="form-label fw-semibold small text-dark"></label>
+                        <input asp-for="Asunto" class="form-control" placeholder="Ej: Consulta sobre disponibilidad, entrega o producto" />
+                        <span asp-validation-for="Asunto" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Mensaje" class="form-label fw-semibold small text-dark"></label>
+                        <textarea asp-for="Mensaje" class="form-control" rows="5" placeholder="Escribí tu mensaje o consulta de manera detallada..."></textarea>
+                        <span asp-validation-for="Mensaje" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-check mb-4 p-3 bg-light rounded-3 border">
+                        <input class="form-check-input ms-0 me-2" type="checkbox" asp-for="EsUrgente" id="esUrgenteCheck" />
+                        <label class="form-check-label fw-semibold text-danger" for="esUrgenteCheck">
+                            <i class="fas fa-exclamation-circle me-1"></i> Marcar como Consulta Urgente de Logística / Entrega
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                        <i class="fas fa-paper-plane me-1"></i> Enviar Mensaje
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

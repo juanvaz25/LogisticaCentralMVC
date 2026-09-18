@@ -1,0 +1,50 @@
+@model List<LCP.Web.Models.Entities.NodoDistribucion>
+@{
+    ViewData["Title"] = "Red de Nodos Logísticos de Distribución";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="text-center mb-5">
+        <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold mb-2">
+            <i class="fas fa-network-wired me-2"></i>Cobertura Regional Pampeana y Centro
+        </div>
+        <h1 class="fw-bold text-dark">Nodos de Distribución LCP</h1>
+        <p class="text-muted lead">Conocé nuestras sucursales y puntos de recepción y despacho de paquetería en todo el centro del país.</p>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var nodo in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-lcp h-100 border-0 shadow-sm p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-primary rounded-pill px-3 py-1">
+                            <i class="fas fa-map-marker-alt me-1"></i>@(nodo.Provincia?.Nombre ?? "La Pampa")
+                        </span>
+                        <span class="badge bg-light text-dark border">
+                            <i class="fas fa-clock me-1 text-info"></i>@nodo.TiempoEstimadoHoras hs estimadas
+                        </span>
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-2">@nodo.Nombre</h5>
+                    <p class="text-muted small mb-3"><i class="fas fa-map-pin text-danger me-1"></i>@nodo.Direccion, @nodo.Ciudad</p>
+
+                    <div class="border-top pt-3 mt-auto">
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span><i class="fas fa-phone-alt me-1"></i>Teléfono:</span>
+                            <span class="fw-semibold text-dark">@(nodo.Telefono ?? "0800-333-527")</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span><i class="fas fa-business-time me-1"></i>Horario:</span>
+                            <span class="fw-semibold text-dark">@(nodo.HorarioAtencion ?? "08:00 a 18:00 hs")</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span><i class="fas fa-tag me-1 text-success"></i>Tarifa Base:</span>
+                            <span class="fw-bold text-primary">$@nodo.TarifaBase.ToString("N2")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

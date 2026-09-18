@@ -1,0 +1,60 @@
+@model LCP.Web.Models.Entities.Categoria
+@{
+    ViewData["Title"] = $"Editar Categoría {Model.Nombre}";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card card-lcp border-0 shadow-sm p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                    <div>
+                        <h3 class="fw-bold text-dark mb-1"><i class="fas fa-edit text-primary me-2"></i>Editar Categoría</h3>
+                        <p class="text-muted small mb-0">Actualizar datos del rubro comercial</p>
+                    </div>
+                    <a asp-action="Index" class="btn btn-outline-secondary rounded-pill btn-sm">Volver</a>
+                </div>
+
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="FechaCreacion" />
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Nombre" class="form-label fw-semibold small text-dark"></label>
+                        <input asp-for="Nombre" class="form-control" />
+                        <span asp-validation-for="Nombre" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Icono" class="form-label fw-semibold small text-dark"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="@(Model.Icono ?? "fas fa-icons")"></i></span>
+                            <input asp-for="Icono" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Descripcion" class="form-label fw-semibold small text-dark"></label>
+                        <textarea asp-for="Descripcion" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="mb-4 form-check form-switch p-3 bg-light rounded-3 border">
+                        <input asp-for="Activo" class="form-check-input ms-0 me-2" />
+                        <label asp-for="Activo" class="form-check-label fw-semibold text-dark"></label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                        <i class="fas fa-save me-1"></i> Guardar Cambios
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

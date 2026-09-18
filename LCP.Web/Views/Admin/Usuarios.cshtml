@@ -1,0 +1,168 @@
+@model List<(LCP.Web.Models.Entities.ApplicationUser Usuario, IList<string> Roles)>
+@{
+    ViewData["Title"] = "Gestión de Usuarios y Roles";
+}
+
+<div class="container-fluid px-lg-5 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <h1 class="fw-bold text-dark mb-1"><i class="fas fa-users-cog text-primary me-2"></i>Gestión de Usuarios & Roles</h1>
+            <p class="text-muted small mb-0">Administración de cuentas, permisos ASP.NET Core Identity y habilitación de vendedores</p>
+        </div>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary rounded-pill btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Volver al Panel
+        </a>
+    </div>
+
+    <div class="card card-lcp border-0 shadow-sm p-4">
+        <div class="table-responsive">
+            <table class="table table-hover table-lcp align-middle datatable-lcp mb-0">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Email / Teléfono</th>
+                        <th>Ubicación</th>
+                        <th>Rol Identity</th>
+                        <th>Comercio / CUIT</th>
+                        <th>Estado Vendedor</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var u = item.Usuario;
+                        var rol = item.Roles.FirstOrDefault() ?? "Comprador";
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">@u.NombreCompleto</div>
+                                <small class="text-muted">Registro: @u.FechaRegistro.ToLocalTime().ToString("dd/MM/yyyy")</small>
+                            </td>
+                            <td>
+                                <div>@u.Email</div>
+                                <small class="text-muted">@(u.PhoneNumber ?? "Sin teléfono")</small>
+                            </td>
+                            <td>
+                                <small class="text-muted">@(u.Ciudad ?? "N/A"), @(u.Provincia ?? "N/A")</small>
+                            </td>
+                            <td>
+                                <span class="badge @(rol == "Administrador" ? "bg-danger" : (rol == "Vendedor" ? "bg-warning text-dark" : "bg-primary")) rounded-pill px-3 py-1">
+                                    @rol
+                                </span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(u.NombreComercio))
+                                {
+                                    <div class="fw-semibold text-dark small">@u.NombreComercio</div>
+                                    <small class="text-muted">CUIT: @(u.Cuit ?? "N/A")</small>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">-</small>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge @(u.EsVendedorActivo ? "bg-success" : "bg-secondary")">
+                                    @(u.EsVendedorActivo ? "Habilitado" : "Deshabilitado")
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <!-- Botón cambiar Rol -->
+                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 me-1" onclick="abrirModalRol('@u.Id', '@u.NombreCompleto', '@rol')" title="Cambiar Rol">
+                                        <i class="fas fa-user-shield me-1"></i> Rol
+                                    </button>
+                                    <!-- Toggle Vendedor -->
+                                    <button type="button" class="btn btn-sm @(u.EsVendedorActivo ? "btn-outline-warning" : "btn-outline-success") rounded-pill px-2" onclick="toggleVendedor('@u.Id')" title="@(u.EsVendedorActivo ? "Deshabilitar Venta" : "Habilitar Venta")">
+                                        <i class="fas @(u.EsVendedorActivo ? "fa-toggle-on" : "fa-toggle-off")"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cambiar Rol -->
+<div class="modal fade" id="modalCambiarRol" tabindex="-1" aria-labelledby="modalRolLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalRolLabel"><i class="fas fa-user-shield me-2"></i>Asignar Rol Identity</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="modal-user-id" />
+                <p class="text-muted mb-3">Modificar el rol asignado a <strong id="modal-user-name" class="text-dark"></strong>:</p>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-dark">Rol del Usuario:</label>
+                    <select id="modal-select-rol" class="form-select">
+                        <option value="Comprador">Comprador (Cliente)</option>
+                        <option value="Vendedor">Vendedor (Comercio)</option>
+                        <option value="Administrador">Administrador (Control Total)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary rounded-pill fw-bold" onclick="guardarRol()">Actualizar Rol</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function abrirModalRol(id, nombre, rolActual) {
+            $('#modal-user-id').val(id);
+            $('#modal-user-name').text(nombre);
+            $('#modal-select-rol').val(rolActual);
+            $('#modalCambiarRol').modal('show');
+        }
+
+        function guardarRol() {
+            const id = $('#modal-user-id').val();
+            const nuevoRol = $('#modal-select-rol').val();
+
+            $.ajax({
+                url: '/Admin/CambiarRol',
+                type: 'POST',
+                data: {
+                    id: id,
+                    nuevoRol: nuevoRol,
+                    "__RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (res) {
+                    $('#modalCambiarRol').modal('hide');
+                    if (res.success) {
+                        Swal.fire('¡Actualizado!', res.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                    }
+                }
+            });
+        }
+
+        function toggleVendedor(id) {
+            $.ajax({
+                url: '/Admin/ToggleVendedor',
+                type: 'POST',
+                data: {
+                    id: id,
+                    "__RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (res) {
+                    if (res.success) {
+                        Swal.fire('¡Listo!', res.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                    }
+                }
+            });
+        }
+    </script>
+}

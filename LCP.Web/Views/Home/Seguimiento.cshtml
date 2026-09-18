@@ -1,0 +1,122 @@
+@model LCP.Web.Models.ViewModels.Pedidos.SeguimientoViewModel
+@{
+    ViewData["Title"] = "Seguimiento de Envíos en Tiempo Real";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Formulario de búsqueda -->
+            <div class="card card-lcp border-0 shadow-sm p-4 mb-4">
+                <div class="text-center mb-4">
+                    <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold mb-2">
+                        <i class="fas fa-satellite-dish me-2"></i>Trazabilidad Logística LCP
+                    </div>
+                    <h2 class="fw-bold text-dark">Rastreá tu Envío</h2>
+                    <p class="text-muted">Ingresá tu código de seguimiento alfanumérico para conocer la ubicación y estado de tu paquete.</p>
+                </div>
+
+                <form asp-controller="Home" asp-action="Seguimiento" method="get" class="row g-2 justify-content-center">
+                    <div class="col-md-7">
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-light border-end-0"><i class="fas fa-barcode text-primary"></i></span>
+                            <input type="text" name="codigo" class="form-control border-start-0" placeholder="Ej: LCP-20260918-7821" value="@Model.CodigoBusqueda" required />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill">
+                            <i class="fas fa-search me-1"></i> Rastrear
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-3 small text-muted">
+                    <span>Códigos de prueba: </span>
+                    <a href="/Home/Seguimiento?codigo=LCP-20260918-7821" class="badge bg-light text-primary border text-decoration-none me-1">LCP-20260918-7821 (En Camino)</a>
+                    <a href="/Home/Seguimiento?codigo=LCP-20260910-3419" class="badge bg-light text-success border text-decoration-none">LCP-20260910-3419 (Entregado)</a>
+                </div>
+            </div>
+
+            <!-- Resultados -->
+            @if (Model.Encontrado && Model.Pedido != null)
+            {
+                var p = Model.Pedido;
+                <div class="card card-lcp border-0 shadow-sm p-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4">
+                        <div>
+                            <span class="badge bg-dark text-uppercase mb-1">Código de Seguimiento</span>
+                            <h3 class="fw-bold text-primary mb-0 font-monospace">@p.CodigoSeguimiento</h3>
+                        </div>
+                        <div class="text-md-end mt-2 mt-md-0">
+                            <span class="badge @(p.Estado == LCP.Web.Models.Enums.EstadoPedido.Entregado ? "bg-success" : (p.Estado == LCP.Web.Models.Enums.EstadoPedido.Cancelado ? "bg-danger" : "bg-primary")) fs-6 px-3 py-2 rounded-pill">
+                                <i class="fas fa-circle-notch fa-spin me-1"></i> @p.Estado
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Resumen del Envío -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3">
+                                <small class="text-muted text-uppercase d-block fw-bold">Fecha de Emisión</small>
+                                <span class="fw-semibold text-dark">@p.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm") hs</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3">
+                                <small class="text-muted text-uppercase d-block fw-bold">Entrega Estimada</small>
+                                <span class="fw-semibold text-dark">@(p.FechaEntregaEstimada.HasValue ? p.FechaEntregaEstimada.Value.ToLocalTime().ToString("dd/MM/yyyy") : "A calcular")</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3">
+                                <small class="text-muted text-uppercase d-block fw-bold">Nodo Logístico Asignado</small>
+                                <span class="fw-semibold text-primary">@(p.NodoDistribucion?.Nombre ?? "Hub Central Santa Rosa")</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline de Eventos -->
+                    @await Component.InvokeAsync("TrackingTimeline", new { pedido = p })
+
+                    <!-- Datos de Entrega y QR -->
+                    <div class="row g-4 mt-2 pt-3 border-top">
+                        <div class="col-md-8">
+                            <h6 class="fw-bold text-dark mb-3"><i class="fas fa-map-marker-alt text-danger me-2"></i>Destino del Envío</h6>
+                            <p class="mb-1 fw-semibold text-dark">@p.DireccionEntrega</p>
+                            <p class="mb-1 text-muted">@p.CiudadEntrega, @p.ProvinciaEntrega @(!string.IsNullOrEmpty(p.CodigoPostalEntrega) ? $"(CP {p.CodigoPostalEntrega})" : "")</p>
+                            <p class="mb-0 text-muted small"><i class="fas fa-phone-alt me-1"></i>Contacto: @p.TelefonoContacto</p>
+                            
+                            @if (!string.IsNullOrEmpty(p.NotasAdicionales))
+                            {
+                                <div class="mt-2 p-2 bg-light rounded small text-secondary">
+                                    <strong>Indicaciones:</strong> @p.NotasAdicionales
+                                </div>
+                            }
+                        </div>
+
+                        <div class="col-md-4 text-center">
+                            @if (!string.IsNullOrEmpty(p.CodigoQrBase64))
+                            {
+                                <div class="p-3 bg-white border rounded shadow-sm d-inline-block">
+                                    <img src="@p.CodigoQrBase64" alt="Código QR de Entrega" style="width: 140px; height: 140px;" />
+                                    <small class="d-block text-muted mt-2 fw-semibold" style="font-size: 0.75rem;">
+                                        Código QR de Entrega LCP
+                                    </small>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(Model.MensajeError))
+            {
+                <div class="alert alert-warning border-0 shadow-sm p-4 text-center">
+                    <i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                    <h5 class="fw-bold">Envío no encontrado</h5>
+                    <p class="mb-0">@Model.MensajeError</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

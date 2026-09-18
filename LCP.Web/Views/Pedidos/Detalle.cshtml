@@ -1,0 +1,161 @@
+@model LCP.Web.Models.Entities.Pedido
+@using LCP.Web.Models.Enums
+@{
+    ViewData["Title"] = $"Pedido {Model.CodigoSeguimiento}";
+}
+
+<div class="container px-lg-5 py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Inicio</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Pedidos" asp-action="MisPedidos" class="text-decoration-none">Mis Pedidos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.CodigoSeguimiento</li>
+        </ol>
+    </nav>
+
+    <!-- Header del Pedido -->
+    <div class="card card-lcp border-0 shadow-sm p-4 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center">
+            <div>
+                <span class="badge bg-dark text-uppercase mb-1">Código de Seguimiento Oficial</span>
+                <h2 class="fw-bold text-primary mb-0 font-monospace">@Model.CodigoSeguimiento</h2>
+                <small class="text-muted"><i class="far fa-calendar-alt me-1"></i>Emitido el @Model.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm") hs</small>
+            </div>
+            <div class="d-flex align-items-center gap-2 mt-3 mt-md-0">
+                <span class="badge @(Model.Estado == EstadoPedido.Entregado ? "bg-success" : (Model.Estado == EstadoPedido.Cancelado ? "bg-danger" : "bg-primary")) fs-6 px-3 py-2 rounded-pill">
+                    @Model.Estado
+                </span>
+                <a asp-action="Comprobante" asp-route-id="@Model.Id" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="fas fa-print me-1"></i> Imprimir
+                </a>
+                @if (Model.Estado != EstadoPedido.Entregado && Model.Estado != EstadoPedido.Cancelado)
+                {
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalCancelarPedido">
+                        <i class="fas fa-times-circle me-1"></i> Cancelar Pedido
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline y Trazabilidad -->
+    <div class="card card-lcp border-0 shadow-sm p-4 mb-4">
+        <h5 class="fw-bold text-dark mb-2"><i class="fas fa-route text-primary me-2"></i>Trazabilidad y Estado del Envío</h5>
+        @await Component.InvokeAsync("TrackingTimeline", new { pedido = Model })
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Productos Comprados -->
+        <div class="col-lg-8">
+            <div class="card card-lcp border-0 shadow-sm p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3"><i class="fas fa-box-open text-primary me-2"></i>Artículos Incluidos</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Cant.</th>
+                                <th class="text-end">Precio Unit.</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Model.Detalles)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="@(d.Producto?.ImagenUrl ?? "/images/no-image.png")" alt="@d.Producto?.Nombre" class="rounded me-2" style="width: 45px; height: 45px; object-fit: cover;" />
+                                            <div>
+                                                <div class="fw-semibold text-dark text-truncate" style="max-width: 250px;">@(d.Producto?.Nombre ?? "Producto")</div>
+                                                <small class="text-muted">SKU: @(d.Producto?.CodigoSku ?? "N/A")</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center fw-bold">@d.Cantidad</td>
+                                    <td class="text-end">$@d.PrecioUnitario.ToString("N2")</td>
+                                    <td class="text-end fw-bold text-primary">$@d.Subtotal.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end fw-semibold text-muted">Subtotal de artículos:</td>
+                                <td class="text-end fw-bold text-dark">$@Model.Subtotal.ToString("N2")</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end fw-semibold text-muted">Costo de flete logístico LCP:</td>
+                                <td class="text-end fw-bold text-success">$@Model.CostoEnvio.ToString("N2")</td>
+                            </tr>
+                            <tr class="table-light">
+                                <td colspan="3" class="text-end fw-bold fs-5 text-dark">Total del Pedido:</td>
+                                <td class="text-end fw-bold fs-5 text-primary">$@Model.Total.ToString("N2")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de Entrega y QR de Validación -->
+        <div class="col-lg-4">
+            <div class="card card-lcp border-0 shadow-sm p-4 mb-4 text-center">
+                <h6 class="fw-bold text-primary text-uppercase mb-2"><i class="fas fa-qrcode me-2"></i>Validación de Entrega QR</h6>
+                @if (!string.IsNullOrEmpty(Model.CodigoQrBase64))
+                {
+                    <div class="p-3 bg-light rounded-3 d-inline-block mb-2">
+                        <img src="@Model.CodigoQrBase64" alt="Código QR" style="width: 150px; height: 150px;" />
+                    </div>
+                    <p class="small text-muted mb-2">Mostrá este código QR al repartidor de LCP al recibir tu paquete.</p>
+                    <a asp-action="ValidarEntregaQr" asp-route-token="@Model.TokenEntregaQr" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill w-100">
+                        <i class="fas fa-external-link-alt me-1"></i> Simular Escaneo QR
+                    </a>
+                }
+            </div>
+
+            <div class="card card-lcp border-0 shadow-sm p-4">
+                <h6 class="fw-bold text-dark mb-3"><i class="fas fa-map-marker-alt text-danger me-2"></i>Datos de Destino</h6>
+                <p class="mb-1 fw-bold text-dark">@Model.DireccionEntrega</p>
+                <p class="mb-1 text-muted small">@Model.CiudadEntrega, @Model.ProvinciaEntrega (CP @Model.CodigoPostalEntrega)</p>
+                <p class="mb-2 text-muted small"><i class="fas fa-phone-alt me-1"></i>@Model.TelefonoContacto</p>
+                
+                <hr class="my-2" />
+                
+                <h6 class="fw-bold text-dark mb-2 small"><i class="fas fa-store text-info me-2"></i>Vendedor:</h6>
+                <p class="mb-0 small text-dark fw-semibold">@(Model.Vendedor?.NombreComercio ?? Model.Vendedor?.NombreCompleto)</p>
+
+                <h6 class="fw-bold text-dark mt-3 mb-1 small"><i class="fas fa-credit-card text-success me-2"></i>Método de Pago:</h6>
+                <p class="mb-0 small text-muted">@Model.MetodoPago</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Cancelación de Pedido con Observación Obligatoria -->
+<div class="modal fade" id="modalCancelarPedido" tabindex="-1" aria-labelledby="modalCancelarLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form asp-action="Cancelar" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold" id="modalCancelarLabel"><i class="fas fa-exclamation-triangle me-2"></i>Cancelar Pedido</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted">Según las políticas de LCP, para cancelar el pedido <strong>@Model.CodigoSeguimiento</strong> es obligatorio especificar el motivo u observación.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">Motivo u Observación de Cancelación <span class="text-danger">*</span></label>
+                        <textarea name="motivoCancelacion" class="form-control" rows="3" placeholder="Ej: Cambio de dirección, error en cantidad solicitada, etc." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Volver</button>
+                    <button type="submit" class="btn btn-danger rounded-pill fw-bold">Confirmar Cancelación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

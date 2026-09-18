@@ -1,0 +1,469 @@
+@using Microsoft.AspNetCore.Identity
+@using LCP.Web.Models.Entities
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Logística Centro País (LCP)</title>
+    <meta name="description" content="Logística Centro País - Plataforma líder de comercio, distribución y logística integral en el centro del país y La Pampa." />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.6/dist/sweetalert2.min.css">
+
+    <!-- Custom LCP Styles -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+    <!-- Topbar Corporativo -->
+    <div class="topbar-lcp bg-dark text-white py-1 small">
+        <div class="container-fluid px-3 px-xl-4 d-flex justify-content-between align-items-center">
+            <div>
+                <span class="me-3"><i class="fas fa-map-marker-alt text-primary me-1"></i>Nodo Central: Santa Rosa, La Pampa</span>
+                <span class="d-none d-md-inline me-3"><i class="fas fa-phone-alt text-primary me-1"></i>0800-333-LCP (527)</span>
+                <span class="d-none d-lg-inline"><i class="fas fa-clock text-primary me-1"></i>Envíos 24/7</span>
+            </div>
+            <div>
+                <a asp-controller="Home" asp-action="Seguimiento" class="text-white text-decoration-none me-3 hover-link">
+                    <i class="fas fa-search-location text-warning me-1"></i>Rastrear Envío
+                </a>
+                <a asp-controller="Home" asp-action="NodosPublicos" class="text-white text-decoration-none hover-link">
+                    <i class="fas fa-network-wired text-info me-1"></i>Nodos Logísticos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <header class="sticky-top shadow-sm">
+        <nav class="navbar navbar-expand-xl navbar-dark bg-lcp-navy py-2">
+            <div class="container-fluid px-3 px-xl-4">
+                @if (User.IsInRole("Administrador"))
+                {
+                    <a class="navbar-brand d-flex align-items-center me-2 me-xl-3" asp-controller="Admin" asp-action="Index">
+                        <img src="~/images/Logo-removebg-preview.png" alt="LCP Logo" height="40" class="me-2" onerror="this.src='/images/logoCOmpleto-removebg-preview.png'" />
+                        <div class="brand-text d-flex flex-column">
+                            <span class="fw-bold tracking-tight text-white" style="font-size: 1rem;">LOGÍSTICA CENTRO PAÍS</span>
+                            <span class="badge bg-warning text-dark text-uppercase fw-bold" style="font-size: 0.6rem; width: fit-content;">Panel de Administración</span>
+                        </div>
+                    </a>
+                }
+                else if (User.IsInRole("Vendedor"))
+                {
+                    <a class="navbar-brand d-flex align-items-center me-2 me-xl-3" asp-controller="Vendedor" asp-action="Index">
+                        <img src="~/images/Logo-removebg-preview.png" alt="LCP Logo" height="40" class="me-2" onerror="this.src='/images/logoCOmpleto-removebg-preview.png'" />
+                        <div class="brand-text d-flex flex-column">
+                            <span class="fw-bold tracking-tight text-white" style="font-size: 1rem;">LOGÍSTICA CENTRO PAÍS</span>
+                            <span class="badge bg-info text-dark text-uppercase fw-bold" style="font-size: 0.6rem; width: fit-content;">Portal del Vendedor</span>
+                        </div>
+                    </a>
+                }
+                else
+                {
+                    <a class="navbar-brand d-flex align-items-center me-2 me-xl-3" asp-controller="Home" asp-action="Index">
+                        <img src="~/images/Logo-removebg-preview.png" alt="LCP Logo" height="40" class="me-2" onerror="this.src='/images/logoCOmpleto-removebg-preview.png'" />
+                        <div class="brand-text d-flex flex-column">
+                            <span class="fw-bold tracking-tight text-white" style="font-size: 1rem;">LOGÍSTICA CENTRO PAÍS</span>
+                            <span class="badge bg-primary text-white text-uppercase" style="font-size: 0.6rem; width: fit-content;">Nodo Distribuidor Pampeano</span>
+                        </div>
+                    </a>
+                }
+
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMainContent" aria-controls="navbarMainContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarMainContent">
+                    <ul class="navbar-nav align-items-xl-center me-auto mb-2 mb-xl-0 gap-1">
+                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Administrador"))
+                        {
+                            <!-- MENÚ EXCLUSIVO ADMINISTRADOR -->
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active fw-bold" : "")" asp-controller="Admin" asp-action="Index">
+                                    <i class="fas fa-tachometer-alt me-1 text-warning"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @((ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Usuarios") || ViewContext.RouteData.Values["Controller"]?.ToString() == "Categorias" || ViewContext.RouteData.Values["Controller"]?.ToString() == "Nodos" ? "active fw-bold" : "")" href="#" id="adminConfigDrop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-cogs me-1 text-info"></i>Gestión Base
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="adminConfigDrop">
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Usuarios"><i class="fas fa-users-cog me-2 text-info"></i>Usuarios y Roles</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Categorias" asp-action="Index"><i class="fas fa-tags me-2 text-success"></i>Categorías y Rubros</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Nodos" asp-action="Index"><i class="fas fa-warehouse me-2 text-primary"></i>Nodos de Distribución</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Productos" || ViewContext.RouteData.Values["Controller"]?.ToString() == "Pedidos" ? "active fw-bold" : "")" href="#" id="adminOpsDrop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-boxes me-1 text-danger"></i>Operaciones
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="adminOpsDrop">
+                                    <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="fas fa-boxes me-2 text-danger"></i>Todas las Publicaciones</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Pedidos" asp-action="Index"><i class="fas fa-shipping-fast me-2 text-primary"></i>Gestión de Pedidos</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Consultas" || ViewContext.RouteData.Values["Controller"]?.ToString() == "Reportes" ? "active fw-bold" : "")" href="#" id="adminSupportDrop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-chart-line me-1 text-warning"></i>Soporte & Métricas
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="adminSupportDrop">
+                                    <li><a class="dropdown-item" asp-controller="Consultas" asp-action="Index"><i class="fas fa-headset me-2 text-warning"></i>Centro de Consultas</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Reportes" asp-action="Estadisticas"><i class="fas fa-database me-2 text-info"></i>Reportes Stored Procedures</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Seguimiento" ? "active fw-bold" : "")" asp-controller="Home" asp-action="Seguimiento">
+                                    <i class="fas fa-search-location me-1 text-light"></i>Seguimiento
+                                </a>
+                            </li>
+                        }
+                        else if (SignInManager.IsSignedIn(User) && User.IsInRole("Vendedor"))
+                        {
+                            <!-- MENÚ EXCLUSIVO VENDEDOR -->
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Vendedor" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active fw-bold" : "")" asp-controller="Vendedor" asp-action="Index">
+                                    <i class="fas fa-store me-1 text-info"></i>Mi Local
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Productos" ? "active fw-bold" : "")" href="#" id="vendedorProdDrop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-boxes me-1 text-warning"></i>Productos
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="vendedorProdDrop">
+                                    <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="fas fa-list me-2 text-info"></i>Mis Publicaciones</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Productos" asp-action="Create"><i class="fas fa-plus-circle me-2 text-success"></i>Publicar Producto</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Vendedor" && ViewContext.RouteData.Values["Action"]?.ToString() == "Pedidos" ? "active fw-bold" : "")" asp-controller="Vendedor" asp-action="Pedidos">
+                                    <i class="fas fa-shipping-fast me-1 text-primary"></i>Ventas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Consultas" ? "active fw-bold" : "")" asp-controller="Consultas" asp-action="Index">
+                                    <i class="fas fa-comments me-1 text-success"></i>Consultas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Reportes" ? "active fw-bold" : "")" asp-controller="Reportes" asp-action="Estadisticas">
+                                    <i class="fas fa-chart-pie me-1 text-warning"></i>Métricas SP
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle @(ViewContext.RouteData.Values["Action"]?.ToString() == "NodosPublicos" || ViewContext.RouteData.Values["Action"]?.ToString() == "Seguimiento" ? "active fw-bold" : "")" href="#" id="vendedorLogisticaDrop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-truck me-1 text-light"></i>Logística
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark shadow" aria-labelledby="vendedorLogisticaDrop">
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="NodosPublicos"><i class="fas fa-network-wired me-2 text-info"></i>Red de Nodos Distribución</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Home" asp-action="Seguimiento"><i class="fas fa-search-location me-2 text-warning"></i>Rastrear Envío</a></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <!-- MENÚ COMPRADOR O VISITANTE -->
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active fw-bold" : "")" asp-controller="Home" asp-action="Index">
+                                    <i class="fas fa-home me-1"></i>Inicio
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Catalogo" ? "active fw-bold" : "")" asp-controller="Catalogo" asp-action="Index">
+                                    <i class="fas fa-store me-1"></i>Catálogo
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "NodosPublicos" ? "active fw-bold" : "")" asp-controller="Home" asp-action="NodosPublicos">
+                                    <i class="fas fa-network-wired me-1"></i>Nodos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Seguimiento" ? "active fw-bold" : "")" asp-controller="Home" asp-action="Seguimiento">
+                                    <i class="fas fa-truck me-1"></i>Seguimiento
+                                </a>
+                            </li>
+
+                            @if (SignInManager.IsSignedIn(User))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Pedidos" && ViewContext.RouteData.Values["Action"]?.ToString() == "MisPedidos" ? "active fw-bold" : "")" asp-controller="Pedidos" asp-action="MisPedidos">
+                                        <i class="fas fa-box-open me-1"></i>Mis Compras
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Consultas" ? "active fw-bold" : "")" asp-controller="Consultas" asp-action="Index">
+                                        <i class="fas fa-comments me-1"></i>Mis Consultas
+                                    </a>
+                                </li>
+                            }
+                        }
+                    </ul>
+
+                    <!-- Right Side: Roles / Cart & Account -->
+                    <div class="d-flex align-items-center gap-2 ms-xl-auto flex-shrink-0 mt-2 mt-xl-0">
+                        @if (!User.IsInRole("Administrador") && !User.IsInRole("Vendedor"))
+                        {
+                            <!-- Carrito de Compras exclusivo para compradores/visitantes -->
+                            <a asp-controller="Carrito" asp-action="Index" class="btn btn-outline-light position-relative rounded-pill px-3 py-1 me-2 shadow-sm">
+                                <i class="fas fa-shopping-cart me-1"></i>Carrito
+                                @await Component.InvokeAsync("CarritoBadge")
+                            </a>
+                        }
+                        else if (User.IsInRole("Vendedor"))
+                        {
+                            <a asp-controller="Productos" asp-action="Create" class="btn btn-warning text-dark fw-semibold rounded-pill px-3 py-1 me-2 shadow-sm">
+                                <i class="fas fa-plus-circle me-1"></i>Publicar
+                            </a>
+                        }
+
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            var currentUser = await UserManager.GetUserAsync(User);
+                            <div class="dropdown">
+                                <button class="btn btn-dark dropdown-toggle d-flex align-items-center rounded-pill px-3 py-1 border-secondary user-profile-btn" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @if (!string.IsNullOrEmpty(currentUser?.FotoPerfilUrl))
+                                    {
+                                        <img src="@currentUser.FotoPerfilUrl" class="rounded-circle me-2" width="24" height="24" style="object-fit:cover;" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-user-circle me-2 text-primary"></i>
+                                    }
+                                    <span class="text-truncate">@(currentUser?.NombreCompleto ?? User.Identity?.Name)</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenu">
+                                    <li class="px-3 py-1 text-muted small border-bottom">
+                                        <div class="fw-bold text-dark">@(currentUser?.NombreCompleto)</div>
+                                        <div>@currentUser?.Email</div>
+                                        @if (User.IsInRole("Administrador"))
+                                        {
+                                            <div class="badge bg-warning text-dark mt-1"><i class="fas fa-shield-alt me-1"></i>Administrador</div>
+                                        }
+                                        else if (User.IsInRole("Vendedor"))
+                                        {
+                                            <div class="text-primary small mt-1"><i class="fas fa-store me-1"></i>@(currentUser?.NombreComercio ?? "Comercio Vendedor")</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="badge bg-primary text-white mt-1"><i class="fas fa-shopping-bag me-1"></i>Comprador</div>
+                                        }
+                                    </li>
+
+                                    @if (User.IsInRole("Administrador"))
+                                    {
+                                        <li><a class="dropdown-item mt-1" asp-controller="Admin" asp-action="Index"><i class="fas fa-tachometer-alt me-2 text-warning"></i>Panel Admin</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Usuarios"><i class="fas fa-users-cog me-2 text-info"></i>Gestión de Usuarios</a></li>
+                                    }
+                                    else if (User.IsInRole("Vendedor"))
+                                    {
+                                        <li><a class="dropdown-item mt-1" asp-controller="Vendedor" asp-action="Index"><i class="fas fa-chart-pie me-2 text-info"></i>Mi Local</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Productos" asp-action="Index"><i class="fas fa-boxes me-2 text-warning"></i>Mis Productos</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Vendedor" asp-action="Pedidos"><i class="fas fa-shipping-fast me-2 text-primary"></i>Mis Ventas</a></li>
+                                    }
+                                    else
+                                    {
+                                        <li><a class="dropdown-item mt-1" asp-controller="Pedidos" asp-action="MisPedidos"><i class="fas fa-receipt me-2 text-info"></i>Mis Pedidos</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Consultas" asp-action="Index"><i class="fas fa-envelope-open-text me-2 text-success"></i>Mis Consultas</a></li>
+                                    }
+
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fas fa-id-card me-2 text-primary"></i>Mi Perfil</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword"><i class="fas fa-key me-2 text-warning"></i>Cambiar Contraseña</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light rounded-pill px-3 py-1">
+                                <i class="fas fa-sign-in-alt me-1"></i>Ingresar
+                            </a>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary rounded-pill px-3 py-1 shadow-sm">
+                                <i class="fas fa-user-plus me-1"></i>Registrarse
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Body -->
+    <main role="main" class="flex-grow-1">
+        @RenderBody()
+    </main>
+
+    <!-- Footer Corporativo LCP -->
+    <footer class="footer-lcp bg-dark text-white pt-5 pb-3 mt-5">
+        <div class="container-fluid px-lg-5">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="~/images/Logo-removebg-preview.png" alt="LCP Logo" height="42" class="me-2" />
+                        <h5 class="fw-bold mb-0 text-white">LOGÍSTICA CENTRO PAÍS</h5>
+                    </div>
+                    <p class="text-secondary small mb-3">
+                        Nodo estratégico distribuidor de la producción, comercio y servicios del centro de Argentina. Conectamos La Pampa, Córdoba, Buenos Aires y San Luis con trazabilidad en tiempo real y confirmación por QR.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="btn btn-sm btn-outline-secondary rounded-circle"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <h6 class="text-uppercase fw-bold text-primary mb-3">Accesos Rápidos</h6>
+                    <ul class="list-unstyled text-secondary small">
+                        <li class="mb-2"><a asp-controller="Home" asp-action="Index" class="text-decoration-none text-secondary hover-link"><i class="fas fa-chevron-right me-1 small"></i>Inicio</a></li>
+                        <li class="mb-2"><a asp-controller="Catalogo" asp-action="Index" class="text-decoration-none text-secondary hover-link"><i class="fas fa-chevron-right me-1 small"></i>Catálogo de Productos</a></li>
+                        <li class="mb-2"><a asp-controller="Home" asp-action="Seguimiento" class="text-decoration-none text-secondary hover-link"><i class="fas fa-chevron-right me-1 small"></i>Seguimiento en Vivo</a></li>
+                        <li class="mb-2"><a asp-controller="Home" asp-action="NodosPublicos" class="text-decoration-none text-secondary hover-link"><i class="fas fa-chevron-right me-1 small"></i>Nodos de Distribución</a></li>
+                        <li class="mb-2"><a asp-controller="Consultas" asp-action="Nueva" class="text-decoration-none text-secondary hover-link"><i class="fas fa-chevron-right me-1 small"></i>Soporte Técnico</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-uppercase fw-bold text-primary mb-3">Red de Distribución</h6>
+                    <ul class="list-unstyled text-secondary small">
+                        <li class="mb-2"><i class="fas fa-map-pin text-danger me-2"></i>Hub Central: Santa Rosa, La Pampa</li>
+                        <li class="mb-2"><i class="fas fa-map-pin text-primary me-2"></i>Nodo General Pico & Realicó</li>
+                        <li class="mb-2"><i class="fas fa-map-pin text-primary me-2"></i>Nodo Río Cuarto & Córdoba Capital</li>
+                        <li class="mb-2"><i class="fas fa-map-pin text-primary me-2"></i>Nodo Bahía Blanca & Villa Mercedes</li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="text-uppercase fw-bold text-primary mb-3">Contacto Directo</h6>
+                    <p class="text-secondary small mb-2"><i class="fas fa-envelope text-primary me-2"></i>jjvazquezin@gmail.com</p>
+                    <p class="text-secondary small mb-2"><i class="fas fa-graduation-cap text-warning me-2"></i>Materia: Programación III - Aplicaciones Web</p>
+                    <p class="text-secondary small mb-2"><i class="fas fa-user-tie text-info me-2"></i>Profesor: Federico Trani (federico.trani@ites.edu.ar)</p>
+                    <p class="text-secondary small mb-0"><i class="fas fa-code text-success me-2"></i>Desarrollador: Juan Vázquez</p>
+                </div>
+            </div>
+
+            <hr class="border-secondary opacity-25">
+
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small text-secondary">
+                <p class="mb-0">&copy; 2026 Logística Centro País (LCP). Todos los derechos reservados. Desarrollado en .NET 10 MVC.</p>
+                <div class="mt-2 mt-md-0">
+                    <a asp-controller="Home" asp-action="Privacy" class="text-secondary text-decoration-none me-3 hover-link">Privacidad</a>
+                    <a asp-controller="Home" asp-action="Contacto" class="text-secondary text-decoration-none hover-link">Términos de Servicio</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core Scripts: jQuery, Bootstrap 5, DataTables, SweetAlert2 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.6/dist/sweetalert2.all.min.js"></script>
+
+    <!-- Custom Site Scripts -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- SweetAlert2 Toast & Alerts Handler -->
+    <script>
+        $(document).ready(function () {
+            // Inicializar DataTables globales con configuración en español
+            $('.datatable-lcp').DataTable({
+                responsive: true,
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json'
+                },
+                pageLength: 10,
+                order: []
+            });
+
+            @if (TempData["MensajeExito"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Operación Exitosa!',
+                    text: '@Html.Raw(TempData["MensajeExito"])',
+                    confirmButtonColor: '#0d6efd',
+                    timer: 4000
+                });
+                </text>
+            }
+
+            @if (TempData["MensajeError"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Atención',
+                    text: '@Html.Raw(TempData["MensajeError"])',
+                    confirmButtonColor: '#dc3545'
+                });
+                </text>
+            }
+
+            @if (TempData["MensajeInfo"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Información',
+                    text: '@Html.Raw(TempData["MensajeInfo"])',
+                    confirmButtonColor: '#0d6efd',
+                    timer: 3500
+                });
+                </text>
+            }
+        });
+
+        // Función global para confirmaciones de borrado/desactivación con SweetAlert2
+        function confirmarAccionSweet(url, titulo, texto, formId) {
+            Swal.fire({
+                title: titulo || '¿Está seguro de continuar?',
+                text: texto || 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Sí, confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (formId) {
+                        $('#' + formId).submit();
+                    } else if (url) {
+                        window.location.href = url;
+                    }
+                }
+            });
+        }
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

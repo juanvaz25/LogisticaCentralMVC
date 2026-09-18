@@ -1,0 +1,5 @@
+@model int
+
+<span class="badge bg-danger rounded-pill cart-counter-badge @(Model > 0 ? "" : "d-none")" id="navbar-cart-count">
+    @Model
+</span>

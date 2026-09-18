@@ -1,0 +1,165 @@
+@using LCP.Web.Models.Entities
+@using LCP.Web.Models.Enums
+@{
+    ViewData["Title"] = "Panel de Administración Global";
+    var ultimosPedidos = ViewBag.UltimosPedidos as List<Pedido> ?? new();
+}
+
+<div class="container-fluid px-lg-5 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <span class="badge bg-danger text-uppercase mb-1">Área Administrativa Central</span>
+            <h1 class="fw-bold text-dark mb-0"><i class="fas fa-shield-alt text-primary me-2"></i>Panel General LCP</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Reportes" asp-action="Estadisticas" class="btn btn-outline-primary rounded-pill btn-sm px-3">
+                <i class="fas fa-database me-1"></i> Reportes Stored Procedures
+            </a>
+            <a asp-action="Usuarios" class="btn btn-primary rounded-pill btn-sm px-3 shadow-sm">
+                <i class="fas fa-users-cog me-1"></i> Gestión de Usuarios
+            </a>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Métricas Globales -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-2">
+            <div class="card card-lcp border-0 shadow-sm p-3 text-center">
+                <small class="text-muted fw-bold text-uppercase">Usuarios</small>
+                <h3 class="fw-bold text-dark mb-0 mt-1">@ViewBag.TotalUsuarios</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card card-lcp border-0 shadow-sm p-3 text-center">
+                <small class="text-muted fw-bold text-uppercase">Comercios</small>
+                <h3 class="fw-bold text-primary mb-0 mt-1">@ViewBag.TotalVendedores</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card card-lcp border-0 shadow-sm p-3 text-center">
+                <small class="text-muted fw-bold text-uppercase">Productos</small>
+                <h3 class="fw-bold text-success mb-0 mt-1">@ViewBag.TotalProductos</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card card-lcp border-0 shadow-sm p-3 text-center">
+                <small class="text-muted fw-bold text-uppercase">Pedidos</small>
+                <h3 class="fw-bold text-info mb-0 mt-1">@ViewBag.TotalPedidos</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card card-lcp border-0 shadow-sm p-3 text-center">
+                <small class="text-muted fw-bold text-uppercase">Nodos LCP</small>
+                <h3 class="fw-bold text-warning mb-0 mt-1">@ViewBag.TotalNodos</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card card-lcp border-0 shadow-sm p-3 text-center">
+                <small class="text-muted fw-bold text-uppercase">Facturación</small>
+                <h4 class="fw-bold text-success mb-0 mt-1 text-truncate">$@ViewBag.TotalIngresos.ToString("N0")</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accesos Directos a Módulos del Sistema -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <a asp-controller="Categorias" asp-action="Index" class="card card-lcp p-3 text-decoration-none border-0 shadow-sm h-100">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle me-3">
+                        <i class="fas fa-tags fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">Categorías</h6>
+                        <small class="text-muted">Administrar rubros comerciales</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a asp-controller="Nodos" asp-action="Index" class="card card-lcp p-3 text-decoration-none border-0 shadow-sm h-100">
+                <div class="d-flex align-items-center">
+                    <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle me-3">
+                        <i class="fas fa-warehouse fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">Nodos Logísticos</h6>
+                        <small class="text-muted">Centros de distribución y tarifas</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a asp-controller="Productos" asp-action="Index" class="card card-lcp p-3 text-decoration-none border-0 shadow-sm h-100">
+                <div class="d-flex align-items-center">
+                    <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-circle me-3">
+                        <i class="fas fa-boxes fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">Publicaciones</h6>
+                        <small class="text-muted">Control global de artículos</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a asp-action="Usuarios" class="card card-lcp p-3 text-decoration-none border-0 shadow-sm h-100">
+                <div class="d-flex align-items-center">
+                    <div class="bg-danger bg-opacity-10 text-danger p-3 rounded-circle me-3">
+                        <i class="fas fa-users-cog fa-lg"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">Usuarios & Roles</h6>
+                        <small class="text-muted">Cuentas y autorizaciones Identity</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabla de Últimos Pedidos Globales -->
+    <div class="card card-lcp border-0 shadow-sm p-4">
+        <h5 class="fw-bold text-dark mb-3"><i class="fas fa-history text-primary me-2"></i>Últimos Envíos Registrados en la Plataforma</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tracking</th>
+                        <th>Fecha</th>
+                        <th>Comprador</th>
+                        <th>Vendedor</th>
+                        <th>Estado</th>
+                        <th>Total</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in ultimosPedidos)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-controller="Pedidos" asp-action="Detalle" asp-route-id="@p.Id" class="fw-bold text-primary font-monospace text-decoration-none">
+                                    @p.CodigoSeguimiento
+                                </a>
+                            </td>
+                            <td>@p.FechaPedido.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@(p.Comprador?.NombreCompleto)</td>
+                            <td>@(p.Vendedor?.NombreComercio ?? p.Vendedor?.NombreCompleto)</td>
+                            <td>
+                                <span class="badge @(p.Estado == EstadoPedido.Entregado ? "bg-success" : (p.Estado == EstadoPedido.Cancelado ? "bg-danger" : "bg-primary")) rounded-pill">
+                                    @p.Estado
+                                </span>
+                            </td>
+                            <td class="fw-bold text-dark">$@p.Total.ToString("N2")</td>
+                            <td class="text-center">
+                                <a asp-controller="Pedidos" asp-action="Detalle" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    Ver Detalle
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

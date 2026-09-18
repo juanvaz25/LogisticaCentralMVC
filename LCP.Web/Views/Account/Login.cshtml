@@ -1,0 +1,69 @@
+@model LCP.Web.Models.ViewModels.Account.LoginViewModel
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card card-lcp border-0 shadow-sm p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <img src="~/images/Logo-removebg-preview.png" alt="LCP Logo" height="55" class="mb-2" />
+                    <h3 class="fw-bold text-dark mb-1">Iniciar Sesión</h3>
+                    <p class="text-muted small">Accedé a tu panel de comprador o comercio vendedor</p>
+                </div>
+
+                <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-semibold small text-dark"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="fas fa-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" placeholder="nombre@correo.com" autofocus />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-semibold small text-dark"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted"><i class="fas fa-lock"></i></span>
+                            <input asp-for="Password" class="form-control" placeholder="Tu contraseña" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4 form-check">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label small text-muted"></label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-pill mb-3 shadow-sm">
+                        <i class="fas fa-sign-in-alt me-1"></i> Ingresar a LCP
+                    </button>
+                </form>
+
+                <!-- Credenciales de prueba rápida -->
+                <div class="border-top pt-3 mt-2">
+                    <p class="small text-muted mb-2 fw-bold text-center">Cuentas demo para evaluación:</p>
+                    <div class="d-flex flex-column gap-1 small text-muted bg-light p-2 rounded">
+                        <div><strong>Admin:</strong> admin@lcp.com.ar / Admin123!</div>
+                        <div><strong>Vendedor:</strong> vendedor1@lcp.com.ar / Vendedor123!</div>
+                        <div><strong>Comprador:</strong> comprador@lcp.com.ar / Comprador123!</div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4 small">
+                    <span class="text-muted">¿No tenés una cuenta?</span>
+                    <a asp-controller="Account" asp-action="Register" class="text-primary fw-bold text-decoration-none ms-1">Registrate acá</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

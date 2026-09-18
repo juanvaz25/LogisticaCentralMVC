@@ -1,0 +1,132 @@
+@model LCP.Web.Models.ViewModels.Pedidos.CarritoViewModel
+@{
+    ViewData["Title"] = "Mi Carrito de Compras";
+}
+
+<div class="container px-lg-5 py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="fw-bold text-dark mb-1"><i class="fas fa-shopping-cart text-primary me-2"></i>Carrito de Compras</h1>
+            <p class="text-muted small mb-0">Revisá los productos agregados antes de proceder a la entrega</p>
+        </div>
+        @if (Model.Items.Any())
+        {
+            <form asp-controller="Carrito" asp-action="Limpiar" method="post">
+                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill">
+                    <i class="fas fa-trash-alt me-1"></i> Vaciar Carrito
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (Model.Items.Any())
+    {
+        <div class="row g-4">
+            <!-- Tabla de Items -->
+            <div class="col-lg-8">
+                <div class="card card-lcp border-0 shadow-sm p-4">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Precio</th>
+                                    <th class="text-center" style="width: 140px;">Cantidad</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th class="text-center" style="width: 50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@(item.ImagenUrl ?? "/images/no-image.png")" alt="@item.Nombre" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;" />
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-0">
+                                                        <a asp-controller="Catalogo" asp-action="Detalle" asp-route-id="@item.ProductoId" class="text-dark text-decoration-none hover-link">
+                                                            @item.Nombre
+                                                        </a>
+                                                    </h6>
+                                                    <small class="text-muted"><i class="fas fa-store me-1"></i>@item.NombreVendedor</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center fw-semibold text-dark">$@item.Precio.ToString("N2")</td>
+                                        <td class="text-center">
+                                            <form asp-controller="Carrito" asp-action="ActualizarCantidad" method="post" class="d-flex align-items-center justify-content-center">
+                                                <input type="hidden" name="productoId" value="@item.ProductoId" />
+                                                <input type="number" name="cantidad" value="@item.Cantidad" min="1" max="99" class="form-control form-control-sm text-center fw-bold me-1" style="width: 70px;" onchange="this.form.submit()" />
+                                            </form>
+                                        </td>
+                                        <td class="text-end fw-bold text-primary">$@item.Subtotal.ToString("N2")</td>
+                                        <td class="text-center">
+                                            <form asp-controller="Carrito" asp-action="Eliminar" method="post">
+                                                <input type="hidden" name="productoId" value="@item.ProductoId" />
+                                                <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Eliminar producto">
+                                                    <i class="fas fa-times-circle fa-lg"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a asp-controller="Catalogo" asp-action="Index" class="btn btn-outline-primary rounded-pill btn-sm px-3">
+                            <i class="fas fa-arrow-left me-1"></i> Continuar Comprando
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen de Pedido -->
+            <div class="col-lg-4">
+                <div class="card card-lcp border-0 shadow-sm p-4 sticky-top" style="top: 90px;">
+                    <h5 class="fw-bold text-dark mb-3"><i class="fas fa-receipt text-primary me-2"></i>Resumen de Compra</h5>
+
+                    <div class="d-flex justify-content-between mb-2 small text-muted">
+                        <span>Subtotal de productos (@Model.Items.Sum(i => i.Cantidad) u.):</span>
+                        <span class="fw-semibold text-dark">$@Model.Subtotal.ToString("N2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3 small text-muted">
+                        <span>Costo de envío estimado:</span>
+                        <span class="fw-semibold text-success">$@Model.CostoEnvioEstimado.ToString("N2")</span>
+                    </div>
+
+                    <div class="alert alert-info border-0 p-2 small mb-3">
+                        <i class="fas fa-info-circle me-1"></i> El costo y tiempo final se ajustarán según el nodo logístico de destino en el checkout.
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between align-items-baseline mb-4 flex-wrap gap-1">
+                        <span class="fw-bold text-dark fs-5">Total Estimado:</span>
+                        <span class="checkout-total-value ms-auto">$@Model.Total.ToString("N2")</span>
+                    </div>
+
+                    <a asp-controller="Pedidos" asp-action="Checkout" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-sm py-2">
+                        <i class="fas fa-truck-loading me-2"></i> Iniciar Checkout
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card card-lcp border-0 shadow-sm p-5 text-center">
+            <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+            <h3 class="fw-bold text-dark mb-2">Tu carrito está vacío</h3>
+            <p class="text-muted mb-4">Descubrí las publicaciones y productos disponibles de productores de la región.</p>
+            <div>
+                <a asp-controller="Catalogo" asp-action="Index" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold">
+                    <i class="fas fa-store me-1"></i> Explorar Catálogo
+                </a>
+            </div>
+        </div>
+    }
+</div>
