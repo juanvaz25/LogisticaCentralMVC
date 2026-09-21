@@ -5,22 +5,22 @@
 }
 
 <!-- Hero Section Principal LCP -->
-<section class="hero-lcp text-white py-5 py-lg-6 mb-5">
+<section class="hero-lcp py-5 py-lg-6 mb-5">
     <div class="container px-lg-5 py-4">
         <div class="row align-items-center g-5">
             <div class="col-lg-7">
-                <div class="d-inline-flex align-items-center bg-primary bg-opacity-25 border border-primary border-opacity-50 rounded-pill px-3 py-1 mb-3 text-info">
+                <div class="d-inline-flex align-items-center bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-pill px-3 py-1 mb-3 text-primary fw-semibold small">
                     <i class="fas fa-shield-alt me-2"></i> Red Logística Integral y Plataforma de Compra-Venta
                 </div>
-                <h1 class="display-4 fw-extrabold mb-3 lh-sm">
+                <h1 class="display-4 fw-extrabold mb-3 lh-sm text-dark">
                     El nodo distribuidor de la producción y el comercio en el <span class="text-primary">Centro del País</span>
                 </h1>
-                <p class="lead text-secondary mb-4">
+                <p class="lead text-muted mb-4">
                     Comprá y vendé directo de productores y distribuidores pampeanos y de la región central. Seguimiento de envíos en tiempo real y confirmación con código QR.
                 </p>
 
                 <!-- Barra de búsqueda sensitiva y tracking rápido -->
-                <div class="card p-2 border-0 shadow-lg rounded-4 bg-white mb-4 position-relative">
+                <div class="card p-2 border shadow-sm rounded-4 bg-white mb-4 position-relative">
                     <form asp-controller="Catalogo" asp-action="Index" method="get" class="d-flex gap-2">
                         <div class="input-group">
                             <span class="input-group-text bg-transparent border-0 text-muted ps-3">
@@ -28,7 +28,7 @@
                             </span>
                             <input type="text" id="input-busqueda-hero" name="busqueda" class="form-control form-control-lg border-0 shadow-none ps-2" placeholder="Buscar productos, herramientas, alimentos pampeanos, repuestos..." autocomplete="off" />
                         </div>
-                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 fw-semibold">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 fw-semibold shadow-sm">
                             Buscar
                         </button>
                     </form>
@@ -38,10 +38,10 @@
 
                 <!-- Formulario de Rastrear Envío Rápido -->
                 <div class="d-flex flex-wrap align-items-center gap-3 text-secondary small">
-                    <span class="text-white"><i class="fas fa-barcode text-warning me-1"></i> ¿Tenés un código de envío?</span>
+                    <span class="text-dark fw-medium"><i class="fas fa-barcode text-warning me-1"></i> ¿Tenés un código de envío?</span>
                     <form asp-controller="Home" asp-action="Seguimiento" method="get" class="d-inline-flex gap-2">
-                        <input type="text" name="codigo" class="form-control form-control-sm rounded-pill px-3 bg-dark text-white border-secondary" placeholder="Ej: LCP-20260918-7821" style="width: 210px;" required />
-                        <button type="submit" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold">
+                        <input type="text" name="codigo" class="form-control form-control-sm rounded-pill px-3 bg-white text-dark border shadow-none" placeholder="Ej: LCP-20260918-7821" style="width: 210px;" required />
+                        <button type="submit" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold shadow-sm">
                             Rastrear
                         </button>
                     </form>
@@ -49,9 +49,7 @@
             </div>
 
             <div class="col-lg-5 text-center">
-                <div class="position-relative p-4">
-                    <img src="~/images/logoCOmpleto-removebg-preview.png" alt="LCP Red Centro" class="img-fluid drop-shadow" style="max-height: 380px; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.5));" onerror="this.src='/images/Logo-removebg-preview.png'" />
-                </div>
+                <img src="~/images/logoCOmpleto-removebg-preview.png" alt="Logística Centro País (LCP)" class="img-fluid hero-logo" onerror="this.src='/images/Logo-removebg-preview.png'" />
             </div>
         </div>
     </div>
